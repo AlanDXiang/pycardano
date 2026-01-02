@@ -18,15 +18,10 @@ utxos = []
 
 def reload_utxos(main_address):
     global utxos
-
     print("Reloading utxos from Blockfrost")
-
     api = BlockFrostApi(project_id=blockfrost_api_key, base_url=base_url)
-
     local_utxos = api.address_utxos(main_address)
-
     utxos = []
-
     for utxo in local_utxos:
         if len(utxo.amount) == 1:
             new_utxo = {
@@ -34,7 +29,6 @@ def reload_utxos(main_address):
                 "tx_index": utxo.tx_index,
                 "amount": utxo.amount[0].quantity,
             }
-
             utxos.append(new_utxo)
 
 
@@ -45,13 +39,11 @@ else:
     base_url = ApiUrls.mainnet.value
     cardano_network = Network.MAINNET
 
-
 new_wallet = crypto.bip32.HDWallet.from_mnemonic(wallet_mnemonic)
 payment_key = new_wallet.derive_from_path(f"m/1852'/1815'/0'/0/0")
 staking_key = new_wallet.derive_from_path(f"m/1852'/1815'/0'/2/0")
 payment_skey = ExtendedSigningKey.from_hdwallet(payment_key)
 staking_skey = ExtendedSigningKey.from_hdwallet(staking_key)
-
 
 main_address = Address(
     payment_part=payment_skey.to_verification_key().hash(),
@@ -79,12 +71,19 @@ while True:
         time.sleep(10)
         continue
     else:
+        # --- FIX STARTS HERE ---
+        # 1. Get the latest block info to find the current slot
+        latest_block = api.block_latest()
+        current_slot = latest_block.slot
+
+        # 2. Add a buffer (e.g., 2000 slots = ~33 minutes) to ensure the TX implies valid
+        # by the time it reaches the mempool.
+        calculated_ttl = current_slot + 2000
+        # --- FIX ENDS HERE ---
 
         total_ada_used = 0
         for utxo in utxos:
-
             input = TransactionInput.from_primitive([utxo["tx_hash"], utxo["tx_index"]])
-
             inputs.append(input)
             total_ada_used += int(utxo["amount"])
 
@@ -97,8 +96,9 @@ while True:
         output = TransactionOutput(main_address, Value(ada_leftovers))
         outputs.append(output)
 
+        # Use calculated_ttl here
         tx_body_estimate = TransactionBody(
-            inputs=inputs, outputs=outputs, fee=1000000, ttl=72303971
+            inputs=inputs, outputs=outputs, fee=1000000, ttl=calculated_ttl
         )
         vk_witnesses = []
         signature = payment_skey.sign(tx_body_estimate.hash())
@@ -122,8 +122,9 @@ while True:
         output = TransactionOutput(main_address, Value(ada_leftovers))
         outputs.append(output)
 
+        # Use calculated_ttl here as well
         tx_body_estimate = TransactionBody(
-            inputs=inputs, outputs=outputs, fee=estimated_fee, ttl=72303971
+            inputs=inputs, outputs=outputs, fee=estimated_fee, ttl=calculated_ttl
         )
         vk_witnesses = []
         signature = payment_skey.sign(tx_body_estimate.hash())
@@ -136,18 +137,14 @@ while True:
         )
 
         try:
-
             result = cardano.submit_tx(signed_tx)
 
             if len(result) > 64:
                 print(signed_tx.to_cbor_hex())
             else:
-
                 print(f"Number of inputs: \t {len(signed_tx.transaction_body.inputs)}")
-                print(
-                    f"Number of outputs: \t {len(signed_tx.transaction_body.outputs)}"
-                )
-                print(f"Fee: \t\t\t {signed_tx.transaction_body.fee/1000000} ADA")
+                print(f"Number of outputs: \t {len(signed_tx.transaction_body.outputs)}")
+                print(f"Fee: \t\t\t {signed_tx.transaction_body.fee / 1000000} ADA")
                 print(f"Transaction submitted! ID: {result}")
 
                 utxos = []
@@ -158,7 +155,6 @@ while True:
                         "tx_index": i,
                         "amount": output.amount.coin,
                     }
-
                     utxos.append(new_utxo)
 
         except Exception as e:
