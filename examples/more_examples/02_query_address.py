@@ -11,7 +11,6 @@ network = os.getenv("network")
 wallet_mnemonic = os.getenv("wallet_mnemonic")
 blockfrost_api_key = os.getenv("blockfrost_api_key")
 
-
 if network == "testnet":
     base_url = ApiUrls.preprod.value
     cardano_network = Network.TESTNET
@@ -19,13 +18,11 @@ else:
     base_url = ApiUrls.mainnet.value
     cardano_network = Network.MAINNET
 
-
 new_wallet = crypto.bip32.HDWallet.from_mnemonic(wallet_mnemonic)
 payment_key = new_wallet.derive_from_path(f"m/1852'/1815'/0'/0/0")
 staking_key = new_wallet.derive_from_path(f"m/1852'/1815'/0'/2/0")
 payment_skey = ExtendedSigningKey.from_hdwallet(payment_key)
 staking_skey = ExtendedSigningKey.from_hdwallet(staking_key)
-
 
 main_address = Address(
     payment_part=payment_skey.to_verification_key().hash(),
@@ -63,5 +60,8 @@ for utxo in utxos:
         if token.unit != "lovelace":
             tokens += f"{token.quantity} {token.unit} + "
     print(
-        f"{utxo.tx_hash}#{utxo.tx_index} \t {int(utxo.amount[0].quantity)/1000000} ADA [{tokens}]"
+        f"{utxo.tx_hash}#{utxo.tx_index} \t {int(utxo.amount[0].quantity) / 1000000} ADA [{tokens}]"
     )
+
+total_lovelace = sum(int(utxo.amount[0].quantity) for utxo in utxos)
+print(f"Total Balance: {total_lovelace / 1000000} ADA")
