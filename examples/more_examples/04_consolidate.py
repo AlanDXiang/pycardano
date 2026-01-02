@@ -55,7 +55,7 @@ except Exception as e:
 
 cardano = BlockFrostChainContext(project_id=blockfrost_api_key, base_url=base_url)
 
-builder = TransactionBuilder(cardano)
+# builder = TransactionBuilder(cardano)
 
 inputs = []
 
@@ -64,7 +64,7 @@ total_ada_used = 0
 for utxo in utxos:
     input = TransactionInput.from_primitive([utxo.tx_hash, utxo.tx_index])
     inputs.append(input)
-    builder.add_input(input)
+    # builder.add_input(input)
     total_ada_used += int(utxo.amount[0].quantity)
 
 output = TransactionOutput(main_address, Value(total_ada_used))
