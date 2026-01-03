@@ -4,6 +4,37 @@ Off-chain code of taker and giver in fortytwo.
 
 """
 
+
+"""
+Step1 Store Script
+tx = b45b7df1c44e27915e8d192906d4f4672dee15fb0b6dc0d5ffae9b6c49988df7
+input:
+    giver_address, payment_address = addr_test1vqd37qs9y86z2v4gmjr78nuq2snactwvwwk8yuaz53fz37s5nh4fx
+output:
+    Change UTxO  = addr_test1vqd37qs9y86z2v4gmjr78nuq2snactwvwwk8yuaz53fz37s5nh4fx (Consumed by transaction)
+    Inline script UTxO = addr_test1vqd37qs9y86z2v4gmjr78nuq2snactwvwwk8yuaz53fz37s5nh4fx (script hash = 1534828b3f28a816a421137fba569f855c2ffa3876649638e78a096c)
+
+Step2 Lock Funds
+tx = 644dd703f28bd9368a59864aa91bcf81777054af1e4456b4ac39789e45df9948
+input:
+    giver_address = addr_test1vqd37qs9y86z2v4gmjr78nuq2snactwvwwk8yuaz53fz37s5nh4fx
+output:
+    giver_address = addr_test1vqd37qs9y86z2v4gmjr78nuq2snactwvwwk8yuaz53fz37s5nh4fx
+    script_address = addr_test1wq2nfq5t8u52s94yyyfhlwjkn7z4ctl68pmxf93cu79qjmq2hd8h8  (inline datum =  9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b)
+    
+Step3 Unlock Funds
+tx = cbcae101bc064f7f24d1b43e9644d6250fcfbb990965c11dff5a84ce79a2c484
+input:
+    script_address = addr_test1wq2nfq5t8u52s94yyyfhlwjkn7z4ctl68pmxf93cu79qjmq2hd8h8 (inline datum =  9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b)
+output:
+    giver_address = addr_test1vqd37qs9y86z2v4gmjr78nuq2snactwvwwk8yuaz53fz37s5nh4fx
+    giver_address = addr_test1vqd37qs9y86z2v4gmjr78nuq2snactwvwwk8yuaz53fz37s5nh4fx
+
+"""
+
+
+
+
 import os
 
 import cbor2
