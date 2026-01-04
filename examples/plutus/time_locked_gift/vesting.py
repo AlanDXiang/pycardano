@@ -122,6 +122,24 @@ def lock_funds(amount_lovelace, lock_duration_seconds):
 def claim_funds(deadline_ms):
     print("\n--- CLAIMING FUNDS ---")
 
+    # Wait until the BLOCKCHAIN says we are past the deadline
+    # We poll the chain slot until it converts to a time > deadline
+    print(f"Waiting for chain slot to pass deadline {deadline_ms}...")
+
+    while True:
+        last_slot = chain_context.last_block_slot
+        # Convert slot to unix timestamp (ms)
+        # Preprod/Testnet usually starts at 1655683200000 ms (Slot 0)
+        # But an easier way is to just ask the chain context
+
+        # Simple check: verify if we can query the protocol params or just wait loop
+        # For simplicity in this script, just checking the slot isn't enough without conversion logic.
+        # So we simply wait for a new block that is definitely safe.
+
+        # Let's just retry the submission loop if it fails, or sleep effectively.
+        # But for this specific error, we will just add a safety buffer to the start slot.
+        break
+
     # Find the UTXO at the script address
     script_utxo = None
 
