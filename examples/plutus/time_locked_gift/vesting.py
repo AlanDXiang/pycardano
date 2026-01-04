@@ -153,6 +153,9 @@ def claim_funds(deadline_ms):
 
     builder = TransactionBuilder(chain_context)
 
+    # Tell the builder it can use your wallet to pay the transaction fee
+    builder.add_input_address(my_address)
+
     # Add the script input
     # Note: For efficiency, we usually use reference scripts (like your previous example),
     # but here we attach the script directly for simplicity.
