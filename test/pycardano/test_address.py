@@ -214,12 +214,16 @@ def test_from_primitive_invalid_type_addr():
     with pytest.raises(DeserializeException):
         Address.from_primitive(value)
 
-
-def test_save_load_address():
+def test_save_load_address(tmp_path):
     address_string = "addr_test1vr2p8st5t5cxqglyjky7vk98k7jtfhdpvhl4e97cezuhn0cqcexl7"
     address = Address.from_primitive(address_string)
 
-    with tempfile.NamedTemporaryFile() as f:
-        address.save(f.name)
-        loaded_address = Address.load(f.name)
-        assert address == loaded_address
+    # A pathlib.Path object provided by pytest
+    temp_file = tmp_path / "address.json"
+
+    # Save to the temp path
+    address.save(str(temp_file))
+
+    # Load it back
+    loaded_address = Address.load(str(temp_file))
+    assert address == loaded_address
